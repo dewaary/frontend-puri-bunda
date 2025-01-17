@@ -109,6 +109,7 @@ const EmployeeForm: React.FC = () => {
             : [],
       };
 
+
       const response = await api.post("/employees/add-data", payload);
 
       if (response.data.status === "success") {

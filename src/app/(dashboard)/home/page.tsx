@@ -1,134 +1,242 @@
-"use client"
+'use client';
 
-import { useState } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import { ClipLoader } from 'react-spinners';
+import api from '../../../../utils/api';
 
-const Dashboard = () => {
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+interface Position {
+  id: number;
+  name: string;
+  created_at: string;
+}
 
-  // Dummy data
-  const data = {
-    karyawan: [
-      { id: 1, name: "Karyawan 1", joinedAt: "2024-12-01" },
-      { id: 2, name: "Karyawan 2", joinedAt: "2024-12-05" },
-      { id: 3, name: "Karyawan 3", joinedAt: "2025-01-05" },
-    ],
-    login: [
-      { userId: 1, loginAt: "2024-12-01" },
-      { userId: 2, loginAt: "2024-12-02" },
-      { userId: 3, loginAt: "2025-01-05" },
-    ],
-    topUsers: [
-      { name: "User 1", loginCount: 35, lastLogin: "2025-01-15" },
-      { name: "User 2", loginCount: 40, lastLogin: "2025-01-14" },
-    ],
+interface Unit {
+  id: number;
+  name: string;
+  created_at: string;
+}
+
+interface Employee {
+  id: number;
+  name: string;
+  unit: {
+    id: number;
+    name: string;
   };
+  positions: Position[];
+}
 
-  // Fungsi untuk filter karyawan dan login berdasarkan rentang waktu
-  const filterByDateRange = () => {
-    const start = startDate?.getTime();
-    const end = endDate?.getTime();
+interface LoginStat {
+  name: string;
+  username: string;
+  login_count: number;
+}
 
-    if (!start || !end) {
-      return;
-    }
+interface TopUsers {
+  name: string;
+  username: string;
+  login_count: number;
+}
 
-    const filteredKaryawan = data.karyawan.filter((karyawan) => {
-      const joinedAt = new Date(karyawan.joinedAt).getTime();
-      return joinedAt >= start && joinedAt <= end;
-    });
+interface TableProps<T> {
+  data: T[];
+  columns: { header: string; accessor: (item: T) => React.ReactNode }[];
+  loading: boolean;
+  title: string;
+}
 
-    const filteredLogin = data.login.filter((login) => {
-      const loginAt = new Date(login.loginAt).getTime();
-      return loginAt >= start && loginAt <= end;
-    });
+const PaginatedTable = <T,>({ data, columns, loading, title }: TableProps<T>) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(data.length / itemsPerPage);
 
-    return {
-      filteredKaryawan,
-      filteredLogin,
+  const paginatedData = data.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  return (
+    <div className="bg-white p-6 rounded shadow mb-6">
+      <h3 className="text-lg mb-4">{title}</h3>
+      {loading ? (
+        <div className="flex justify-center items-center h-40">
+          <ClipLoader color="#3498db" loading={loading} size={50} />
+        </div>
+      ) : (
+        <>
+          <table className="min-w-full table-auto">
+            <thead>
+              <tr>
+                {columns.map((col, index) => (
+                  <th key={index} className="py-2 px-4 text-left">
+                    {col.header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedData.map((item, index) => (
+                <tr key={index} className="border-b hover:bg-gray-100">
+                  {columns.map((col, colIndex) => (
+                    <td key={colIndex} className="py-2 px-4">
+                      {col.accessor(item)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="mt-4 flex justify-between items-center">
+            <p>Total: {data.length}</p>
+            <div>
+              <button
+                className="px-2 py-1 mx-1 bg-gray-300 rounded"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Prev
+              </button>
+              <span>{currentPage} / {totalPages}</span>
+              <button
+                className="px-2 py-1 mx-1 bg-gray-300 rounded"
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+const Dashboard: React.FC = () => {
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loginStats, setLoginStats] = useState<LoginStat[]>([]);
+  const [topUser, setTopUser] = useState<TopUsers[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [positionsRes, unitsRes, employeesRes, loginStatsRes, topUsersRes] = await Promise.all([
+          api.get('/positions'),
+          api.get('/units'),
+          api.get('/employees'),
+          api.get('/login-stats'),
+          api.get('/top-users')
+        ]);
+  
+        if (positionsRes.data.status === 'success') {
+          setPositions(
+            positionsRes.data.data.map((position: any) => ({
+              id: position.id,
+              name: position.name,
+              created_at: format(new Date(position.created_at), 'dd MMMM yyyy'),
+            }))
+          );
+        }
+  
+        if (unitsRes.data.status === 'success') {
+          setUnits(
+            unitsRes.data.data.map((unit: any) => ({
+              id: unit.id,
+              name: unit.name,
+              created_at: format(new Date(unit.created_at), 'dd MMMM yyyy'),
+            }))
+          );
+        }
+  
+        if (employeesRes.data.status === 'success') {
+          setEmployees(
+            employeesRes.data.data.map((employee: any) => ({
+              id: employee.id,
+              name: employee.name,
+              unit: employee.unit,
+              positions: employee.positions,
+            }))
+          );
+        }
+  
+        if (loginStatsRes.data.status === 'Login stats retrieved') {
+          setLoginStats(loginStatsRes.data.data.login_stats);
+        }
+
+        if (topUsersRes.data.status === 'Top 10 users retrieved') {
+          setTopUser(loginStatsRes.data.data.top_users);
+        }
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-  };
-
-  const filteredData = filterByDateRange();
+  
+    fetchData();
+  }, []);
+  
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold">Dashboard Overview</h2>
-
-      {/* Filter */}
-      <div className="flex gap-4 my-4">
-        <div>
-          <label>Start Date:</label>
-          <DatePicker
-            selected={startDate}
-            onChange={(date: Date) => setStartDate(date)}
-            dateFormat="yyyy-MM-dd"
-          />
-        </div>
-        <div>
-          <label>End Date:</label>
-          <DatePicker
-            selected={endDate}
-            onChange={(date: Date) => setEndDate(date)}
-            dateFormat="yyyy-MM-dd"
-          />
-        </div>
-        <button
-          onClick={filterByDateRange}
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-        >
-          Apply Filter
-        </button>
-      </div>
-
-      {/* Statistik */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-6 rounded shadow">
-          <h3 className="text-lg">Jumlah Karyawan</h3>
-          <p className="text-2xl font-bold">
-            {filteredData?.filteredKaryawan?.length || data.karyawan.length}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded shadow">
-          <h3 className="text-lg">Jumlah Login</h3>
-          <p className="text-2xl font-bold">
-            {filteredData?.filteredLogin?.length || data.login.length}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded shadow">
-          <h3 className="text-lg">Jumlah Unit</h3>
-          <p className="text-2xl font-bold">{data.unit}</p>
-        </div>
-        <div className="bg-white p-6 rounded shadow">
-          <h3 className="text-lg">Jumlah Jabatan</h3>
-          <p className="text-2xl font-bold">{data.jabatan}</p>
-        </div>
-      </div>
-
-      {/* Top 10 Users */}
-      <div className="bg-white p-6 rounded shadow">
-        <h3 className="text-lg mb-4">Top 10 Users with More Than 25 Logins</h3>
-        <table className="min-w-full table-auto">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 text-left">Name</th>
-              <th className="py-2 px-4 text-left">Login Count</th>
-              <th className="py-2 px-4 text-left">Last Login</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.topUsers.map((user, index) => (
-              <tr key={index} className="border-b hover:bg-gray-100">
-                <td className="py-2 px-4">{user.name}</td>
-                <td className="py-2 px-4">{user.loginCount}</td>
-                <td className="py-2 px-4">{user.lastLogin}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <h2 className="text-xl font-semibold mb-6">Dashboard Overview</h2>
+      <PaginatedTable
+        title="Employee Summary"
+        data={employees}
+        columns={[
+          { header: 'Name', accessor: (item) => item.name },
+          { header: 'Unit', accessor: (item) => item.unit.name },
+          {
+            header: 'Positions',
+            accessor: (item) =>
+              item.positions.map((pos) => pos.name).join(', ') || 'No positions assigned',
+          },
+        ]}
+        loading={loading}
+      />
+      <PaginatedTable
+        title="Login Statistics"
+        data={loginStats}
+        columns={[
+          { header: 'Name', accessor: (item) => item.name },
+          { header: 'Username', accessor: (item) => item.username },
+          { header: 'Login Count', accessor: (item) => item.login_count },
+        ]}
+        loading={loading}
+      />
+       <PaginatedTable
+        title="Top 10 User"
+        data={topUser}
+        columns={[
+          { header: 'Name', accessor: (item) => item.name },
+          { header: 'Username', accessor: (item) => item.username },
+          { header: 'Login Count', accessor: (item) => item.login_count },
+        ]}
+        loading={loading}
+      />
+      <PaginatedTable
+        title="Units"
+        data={units}
+        columns={[
+          { header: 'Unit Name', accessor: (item) => item.name },
+          { header: 'Created At', accessor: (item) => item.created_at },
+        ]}
+        loading={loading}
+      />
+      <PaginatedTable
+        title="Positions"
+        data={positions}
+        columns={[
+          { header: 'Position Name', accessor: (item) => item.name },
+          { header: 'Created At', accessor: (item) => item.created_at },
+        ]}
+        loading={loading}
+      />
     </div>
   );
 };

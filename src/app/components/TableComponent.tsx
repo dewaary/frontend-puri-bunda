@@ -1,21 +1,21 @@
-// components/TableComponent.tsx
+
 import React from 'react';
 
 type TableColumn = {
-  title: string;  // Nama kolom
-  field: string;  // Field yang digunakan untuk menampilkan data
+  title: string;
+  field: string;
 };
 
 type TableRow = {
-  id: string | number;  // Unique ID for each row
-  [key: string]: string | number; // Mencocokkan dengan field pada TableColumn
+  id: string | number;
+  [key: string]: string | number;
   onEdit?: (name: string) => void;
   onDelete?: (name: string) => void;
 };
 
 type TableComponentProps = {
-  columns: TableColumn[];  // Nama-nama kolom tabel
-  data: TableRow[];        // Data yang akan ditampilkan di tabel
+  columns: TableColumn[];
+  data: TableRow[];
 };
 
 const TableComponent: React.FC<TableComponentProps> = ({ columns, data }) => {
@@ -32,7 +32,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ columns, data }) => {
       <tbody>
         {data.map((row) => (
           <tr
-            key={row.id} // Pastikan setiap baris memiliki key unik
+            key={row.id}
             className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
           >
             {columns.map((col) => (

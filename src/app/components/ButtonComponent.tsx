@@ -1,9 +1,9 @@
 import React from 'react';
 
 type ButtonProps = {
-  text: string;            // Teks pada tombol
-  onClick: () => void;     // Fungsi yang dipanggil saat tombol diklik
-  color?: string;          // Warna tombol (opsional, defaultnya biru)
+  text: string; 
+  onClick: () => void;
+  color?: string; 
 };
 
 const ButtonComponent: React.FC<ButtonProps> = ({ text, onClick, color = "blue" }) => {

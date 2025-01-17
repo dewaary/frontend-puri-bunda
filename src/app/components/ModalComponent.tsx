@@ -6,7 +6,7 @@ interface ModalProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClose: () => void;
   onSave: () => void;
-  actionText: string; // Tambahan untuk menentukan teks tombol
+  actionText: string;
 }
 
 const Modal: React.FC<ModalProps> = ({

@@ -7,7 +7,8 @@ type TableColumn = {
 };
 
 type TableRow = {
-  [key: string]: string; // Mencocokkan dengan field pada TableColumn
+  id: string | number;  // Unique ID for each row
+  [key: string]: string | number; // Mencocokkan dengan field pada TableColumn
   onEdit?: (name: string) => void;
   onDelete?: (name: string) => void;
 };
@@ -29,9 +30,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ columns, data }) => {
         </tr>
       </thead>
       <tbody>
-        {data.map((row, index) => (
+        {data.map((row) => (
           <tr
-            key={index}
+            key={row.id} // Pastikan setiap baris memiliki key unik
             className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
           >
             {columns.map((col) => (
@@ -61,5 +62,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ columns, data }) => {
     </table>
   );
 };
+
 
 export default TableComponent;

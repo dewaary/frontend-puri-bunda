@@ -14,6 +14,12 @@ const menuItems = [
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
+        icon: "/home.png",
+        label: "Employee",
+        href: "/employee",
+        visible: ["admin", "teacher", "student", "parent"],
+      },
+      {
         icon: "/attendance.png",
         label: "Master Data Units",
         href: "/master-data/units",

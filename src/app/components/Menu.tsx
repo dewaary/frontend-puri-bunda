@@ -16,7 +16,7 @@ const menuItems = [
       {
         icon: "/attendance.png",
         label: "Master Data Units",
-        href: "/list/teachers",
+        href: "/master-data/units",
         visible: ["admin", "teacher"],
       },
       {

@@ -317,6 +317,7 @@ const EmployeeForm: React.FC = () => {
             onChange={(e) => setNewUnit(e.target.value)}
             onClose={() => setModalOpen(null)}
             onSave={handleAddUnit}
+            actionText="Add"
           />
         )}
         {modalOpen === "position" && (
@@ -326,6 +327,7 @@ const EmployeeForm: React.FC = () => {
             onChange={(e) => setNewPosition(e.target.value)}
             onClose={() => setModalOpen(null)}
             onSave={handleAddPosition}
+            actionText="Add"
           />
         )}
       </div>

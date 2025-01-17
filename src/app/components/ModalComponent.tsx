@@ -6,9 +6,17 @@ interface ModalProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClose: () => void;
   onSave: () => void;
+  actionText: string; // Tambahan untuk menentukan teks tombol
 }
 
-const Modal: React.FC<ModalProps> = ({ title, value, onChange, onClose, onSave }) => {
+const Modal: React.FC<ModalProps> = ({
+  title,
+  value,
+  onChange,
+  onClose,
+  onSave,
+  actionText,
+}) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded-md w-96">
@@ -17,7 +25,7 @@ const Modal: React.FC<ModalProps> = ({ title, value, onChange, onClose, onSave }
           type="text"
           value={value}
           onChange={onChange}
-          placeholder="Enter new name"
+          placeholder="Enter name"
           className="w-full px-3 py-2 border rounded-md mb-4"
         />
         <div className="flex justify-end space-x-4">
@@ -33,7 +41,7 @@ const Modal: React.FC<ModalProps> = ({ title, value, onChange, onClose, onSave }
             onClick={onSave}
             className="bg-blue-500 text-white px-4 py-2 rounded-md"
           >
-            Add
+            {actionText}
           </button>
         </div>
       </div>

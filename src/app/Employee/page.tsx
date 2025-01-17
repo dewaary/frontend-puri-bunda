@@ -111,8 +111,6 @@ const EmployeeForm: React.FC = () => {
 
       const response = await api.post("/employees/add-data", payload);
 
-      console.log("isi response", response)
-
       if (response.data.status === "success") {
         toast.success("Form submitted successfully!");
         console.log("Form submitted successfully:", response.data);

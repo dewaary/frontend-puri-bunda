@@ -112,15 +112,15 @@ const EmployeeForm: React.FC = () => {
       const response = await api.post("/employees/add-data", payload);
 
       if (response.data.status === "success") {
-        toast.success("Form submitted successfully!");
-        console.log("Form submitted successfully:", response.data);
-        router.push("/Login");
+        toast.success(response.data.message);
+        router.push("/login");
       } else {
         toast.error("An unexpected error occurred. Please try again.");
       }
     } catch (error: any) {
       if (error.response) {
         console.log("Error response:", error.response.data);
+        setErrors(error.response.data.message || {});
         toast.error(
           error.response.data?.message ||
             "An error occurred. Please try again later."
@@ -203,7 +203,7 @@ const EmployeeForm: React.FC = () => {
               placeholder="Masukkan nama"
             />
             {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name}</p>
+              <p className="text-red-500 text-sm">{errors.name[0]}</p>
             )}
           </div>
           <div className="mb-4">
@@ -218,7 +218,7 @@ const EmployeeForm: React.FC = () => {
               placeholder="Masukkan username"
             />
             {errors.username && (
-              <p className="text-red-500 text-sm">{errors.username}</p>
+              <p className="text-red-500 text-sm">{errors.username[0]}</p>
             )}
           </div>
 
@@ -235,7 +235,7 @@ const EmployeeForm: React.FC = () => {
               placeholder="Masukkan password"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password}</p>
+              <p className="text-red-500 text-sm">{errors.password[0]}</p>
             )}
           </div>
 
@@ -257,12 +257,8 @@ const EmployeeForm: React.FC = () => {
             >
               Add Unit
             </button>
-            {errors.unit && (
-              <p className="text-red-500 text-sm">
-                {typeof errors.unit === "string"
-                  ? errors.unit
-                  : errors.unit?.label}
-              </p>
+            {errors.unit && Array.isArray(errors.unit) && (
+              <p className="text-red-500 text-sm">{errors.unit[0]}</p>
             )}
           </div>
 
